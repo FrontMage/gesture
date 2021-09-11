@@ -21,7 +21,7 @@ def rec_gesture():
     scale = 0
     while True:
         success, img = cap.read()
-        hands, img = detector.findHands(img, draw=False)
+        hands, img = detector.findHands(img)
 
         if len(hands) == 2:
             if detector.fingersUp(hands[0]) == [1, 1, 0, 0, 0] and detector.fingersUp(
