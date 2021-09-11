@@ -44,6 +44,9 @@ def rec_gesture():
             startDist = None
 
         frames.append(img)
+        cv2.imshow("Image", img)
+        if cv2.waitKey(33) == ord("q"):
+            break
 
 
 threading.Thread(target=rec_gesture).start()
