@@ -45,7 +45,10 @@ def rec_gesture():
     scale = 0
     # Create videowriter as a SHM sink
     out = cv2.VideoWriter(gst_str_rtp, 0, fps, (frame_width, frame_height), True)
+    # 在gesture stop触发之前，下一个gesture start不会触发
     is_waiting_gesture_stop = False
+    # 在gesture start触发之前，下一个gesture stop不会触发
+    is_waiting_gesture_start = False
     while True:
         success, img = cap.read()
         hands, img = detector.findHands(img)
@@ -83,15 +86,18 @@ def rec_gesture():
             gesture_msgs.append(json.dumps({"gesture_type": "zoom_start", "scale": 0}))
             gesture_start.clear()
             is_waiting_gesture_stop = True
+            is_waiting_gesture_start = False
         elif (
             is_deque_all_false(gesture_start)
             and len(gesture_start) == GESTURE_CONTINIUS_TRHESHOLD
+            and not is_waiting_gesture_start
         ):
             gesture_msgs.append(
                 json.dumps({"gesture_type": "gesture_stop", "scale": 0})
             )
             gesture_start.clear()
             is_waiting_gesture_stop = False
+            is_waiting_gesture_start = True
         cv2.imshow("Image", img)
         # out.write(img)
         if cv2.waitKey(33) == ord("q"):
