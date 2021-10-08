@@ -69,7 +69,8 @@ def rec_gesture():
                     hands[0]["center"], hands[1]["center"], img
                 )
 
-                scale = int((length - startDist) // 2)
+                scale = length
+                print(scale)
                 gesture_msgs.append(
                     json.dumps({"gesture_type": "zoom", "scale": scale})
                 )
@@ -104,8 +105,8 @@ def rec_gesture():
             break
 
 
-threading.Thread(target=rec_gesture).start()
-# rec_gesture()
+# threading.Thread(target=rec_gesture).start()
+rec_gesture()
 
 app = FastAPI()
 
