@@ -17,8 +17,8 @@ gesture_start = deque(maxlen=GESTURE_CONTINIUS_TRHESHOLD)
 gst_str_rtp = 'appsrc ! videoconvert ! x264enc speed-preset=ultrafast tune=zerolatency byte-stream=true threads=2 key-int-max=15 intra-refresh=true ! h264parse ! rtph264pay ! capssetter caps="application/x-rtp,profile-level-id=(string)42e01f" ! udpsink host=127.0.0.1 port=8004'
 # Cam properties
 fps = 30.0
-frame_width = 640
-frame_height = 480
+frame_width = 1280
+frame_height = 720
 
 
 def is_deque_all_true(d: Deque):
@@ -41,7 +41,6 @@ def rec_gesture():
     cap.set(4, frame_height)
 
     detector = HandDetector(detectionCon=0.7)
-    startDist = None
     scale = 0
     # Create videowriter as a SHM sink
     out = cv2.VideoWriter(gst_str_rtp, 0, fps, (frame_width, frame_height), True)
@@ -58,13 +57,6 @@ def rec_gesture():
             if detector.fingersUp(hands[0]) == [1, 1, 0, 0, 0] and detector.fingersUp(
                 hands[1]
             ) == [1, 1, 0, 0, 0]:
-                if startDist is None:
-                    length, info, img = detector.findDistance(
-                        hands[0]["center"], hands[1]["center"], img
-                    )
-
-                    startDist = length
-
                 length, info, img = detector.findDistance(
                     hands[0]["center"], hands[1]["center"], img
                 )
@@ -105,8 +97,8 @@ def rec_gesture():
             break
 
 
-# threading.Thread(target=rec_gesture).start()
-rec_gesture()
+threading.Thread(target=rec_gesture).start()
+# rec_gesture()
 
 app = FastAPI()
 
