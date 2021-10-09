@@ -48,6 +48,8 @@ def rec_gesture():
     is_waiting_gesture_stop = False
     # 在gesture start触发之前，下一个gesture stop不会触发
     is_waiting_gesture_start = False
+    # 上次识别有几只手
+    previous_hand_count = 0
     while True:
         success, img = cap.read()
         hands, img = detector.findHands(img)
@@ -62,24 +64,37 @@ def rec_gesture():
                 )
 
                 scale = length
-                print(scale)
                 gesture_msgs.append(
                     json.dumps({"gesture_type": "zoom", "scale": scale})
                 )
+        elif len(hands) == 1:
+            if previous_hand_count == 1:
+                gesture_start.append(True)
+                gesture_msgs.append(
+                    json.dumps(
+                        {"gesture_type": "swipe", "scale": hands[0]["center"][0]}
+                    )
+                )
         else:
             gesture_start.append(False)
-            startDist = None
 
         frames.append(img)
         if (
             is_deque_all_true(gesture_start)
             and len(gesture_start) == GESTURE_CONTINIUS_TRHESHOLD
             and not is_waiting_gesture_stop
+            and len(hands) > 0
         ):
-            gesture_msgs.append(json.dumps({"gesture_type": "zoom_start", "scale": 0}))
+            gesture_type = "invalide_gesture"
+            if len(hands) == 2:
+                gesture_type = "zoom_start"
+            if len(hands) == 1:
+                gesture_type = "swipe start"
+            gesture_msgs.append(json.dumps({"gesture_type": gesture_type, "scale": 0}))
             gesture_start.clear()
             is_waiting_gesture_stop = True
             is_waiting_gesture_start = False
+            print(gesture_type)
         elif (
             is_deque_all_false(gesture_start)
             and len(gesture_start) == GESTURE_CONTINIUS_TRHESHOLD
@@ -91,6 +106,9 @@ def rec_gesture():
             gesture_start.clear()
             is_waiting_gesture_stop = False
             is_waiting_gesture_start = True
+
+        previous_hand_count = len(hands)
+
         cv2.imshow("Image", img)
         # out.write(img)
         if cv2.waitKey(33) == ord("q"):
