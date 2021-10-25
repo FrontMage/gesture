@@ -14,7 +14,7 @@ frames = deque(maxlen=30)
 gesture_start = deque(maxlen=GESTURE_CONTINIUS_TRHESHOLD)
 
 # Define the gstreamer sink
-gst_str_rtp = 'appsrc ! videoconvert ! x264enc speed-preset=ultrafast tune=zerolatency byte-stream=true threads=2 key-int-max=15 intra-refresh=true ! h264parse ! rtph264pay ! capssetter caps="application/x-rtp,profile-level-id=(string)42e01f" ! udpsink host=127.0.0.1 port=8004'
+# gst_str_rtp = 'appsrc ! videoconvert ! x264enc speed-preset=ultrafast tune=zerolatency byte-stream=true threads=2 key-int-max=15 intra-refresh=true ! h264parse ! rtph264pay ! capssetter caps="application/x-rtp,profile-level-id=(string)42e01f" ! udpsink host=127.0.0.1 port=8004'
 # Cam properties
 fps = 30.0
 frame_width = 1280
@@ -43,7 +43,7 @@ def rec_gesture():
     detector = HandDetector(detectionCon=0.7)
     scale = 0
     # Create videowriter as a SHM sink
-    out = cv2.VideoWriter(gst_str_rtp, 0, fps, (frame_width, frame_height), True)
+    # out = cv2.VideoWriter(gst_str_rtp, 0, fps, (frame_width, frame_height), True)
     # 在gesture stop触发之前，下一个gesture start不会触发
     is_waiting_gesture_stop = False
     # 在gesture start触发之前，下一个gesture stop不会触发
@@ -115,8 +115,8 @@ def rec_gesture():
             break
 
 
-threading.Thread(target=rec_gesture).start()
-# rec_gesture()
+# threading.Thread(target=rec_gesture).start()
+rec_gesture()
 
 app = FastAPI()
 
@@ -175,25 +175,25 @@ async def websocket_endpoint(websocket: WebSocket):
             await asyncio.sleep(1)
 
 
-def generate():
-    global outputFrame, lock
-    # loop over frames from the output stream
-    while True:
-        try:
-            frame = frames.popleft()
-        except IndexError:
-            continue
-        (flag, encodedImage) = cv2.imencode(".jpg", frame)
-        if not flag:
-            continue
-        yield (
-            b"--frame\r\n"
-            b"Content-Type: image/jpeg\r\n\r\n" + bytearray(encodedImage) + b"\r\n"
-        )
+# def generate():
+#     global outputFrame, lock
+#     # loop over frames from the output stream
+#     while True:
+#         try:
+#             frame = frames.popleft()
+#         except IndexError:
+#             continue
+#         (flag, encodedImage) = cv2.imencode(".jpg", frame)
+#         if not flag:
+#             continue
+#         yield (
+#             b"--frame\r\n"
+#             b"Content-Type: image/jpeg\r\n\r\n" + bytearray(encodedImage) + b"\r\n"
+#         )
 
 
-@app.get("/video_feed")
-async def video_feed():
-    return StreamingResponse(
-        generate(), media_type="multipart/x-mixed-replace;boundary=frame"
-    )
+# @app.get("/video_feed")
+# async def video_feed():
+#     return StreamingResponse(
+#         generate(), media_type="multipart/x-mixed-replace;boundary=frame"
+#     )
