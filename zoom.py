@@ -109,14 +109,18 @@ def rec_gesture():
 
         previous_hand_count = len(hands)
 
-        cv2.imshow("Image", img)
+        scale_percent = 60  # percent of original size
+        width = int(img.shape[1] * scale_percent / 100)
+        height = int(img.shape[0] * scale_percent / 100)
+        dim = (width, height)
+        cv2.imshow("Image", cv2.resize(img, dim, interpolation=cv2.INTER_AREA))
         # out.write(img)
         if cv2.waitKey(33) == ord("q"):
             break
 
 
-# threading.Thread(target=rec_gesture).start()
-rec_gesture()
+threading.Thread(target=rec_gesture).start()
+# rec_gesture()
 
 app = FastAPI()
 
